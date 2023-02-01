@@ -3,3 +3,18 @@ body {
 	overflow: hidden;
 	background-color: #540bce;
 }
+
+div#detail {
+	position: fixed;
+	top: 0;
+	right: 0;
+	text-align: left;
+	margin-right: 10px;
+	margin-top: 10px;
+	padding: 10px;
+	font-size: 1.1em;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	background-color: white;
+	opacity: 0.7;
+	box-shadow: 2px 2px 5px 5px rgba(0, 0, 0, 0.5);
+}

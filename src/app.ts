@@ -3,8 +3,10 @@ import { Vector2 } from "./Vector2";
 
 export class App {
 
-	private Map2D: number[][] = [];
+	private isStarted = false;
+
 	private MapDimension = new Vector2(50, 50);
+	private Map2D: number[][] = make2DArray(this.MapDimension.x, this.MapDimension.y, 0);
 	private scale = Math.floor(window.innerHeight / this.MapDimension.y); // px per block
 
 	private Mouse = {
@@ -23,7 +25,6 @@ export class App {
 		this.context = <CanvasRenderingContext2D>this.canvas.getContext('2d');
 		this.renderer = new Renderer(this.context);
 		this.renderer.setScale(this.scale);
-		this.generateMap();
 		this.resize();
 		window.addEventListener('resize', this.resize);
 
@@ -37,13 +38,20 @@ export class App {
 		})
 		window.addEventListener('mouseup', e => this.checkMouseState(e.button, false))
 		window.addEventListener('contextmenu', e => e.preventDefault())
+		window.addEventListener('keypress', e => {
+			if (e.key.match(' ')) {
+				this.resetMap();
+				this.generateMap();
+			}
+		})
 	}
 
+	private resetMap() {
+		this.Map2D = make2DArray(this.MapDimension.x, this.MapDimension.y, 0)
+	}
 	private generateMap() {
 		let luckyX = Math.floor(Math.random() * this.MapDimension.x);
-		console.log(luckyX)
 		for (let x = 0; x < this.MapDimension.x; x++) {
-			this.Map2D[x] = [];
 			for (let y = 0; y < this.MapDimension.y; y++) {
 				let xx = x + Math.random() * 10;
 				let yy = y + Math.random() * 10;
@@ -105,16 +113,13 @@ export class App {
 	}
 
 	public init() {
-		
-		this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-		this.context.fillStyle = 'white';
-		this.context.fillRect(0, 0, this.MapDimension.x * this.scale, this.MapDimension.y * this.scale);
-		this.renderer.draw(this.Map2D, this.MapDimension);
-	
+
+		this.resetMap();
+
 		// Setup start and destination
 		let start = new Vector2(0, 0);
 		let end = this.MapDimension.sub(new Vector2(1, 1));
-	
+
 		// Initialize A*star Path finding
 		let possibleWaySet = new Set<Vector2>([start]);
 		let cameFrom: Vector2[][] = make2DArray(this.MapDimension.x, this.MapDimension.y, undefined);
@@ -122,11 +127,11 @@ export class App {
 		let distCovered: number[][] = make2DArray(this.MapDimension.x, this.MapDimension.y, Infinity);
 		isInPossibleWaySet[start.x][start.y] = true;
 		distCovered[start.x][start.y] = 0;
-	
+
 		const loop = () => {
-	
+
 			if (possibleWaySet.size <= 0) return;
-	
+
 			// Get best way from unchecked possible ways
 			let bestWay: Vector2 = start;
 			let bestScore = Infinity;
@@ -139,20 +144,22 @@ export class App {
 			}
 			let current = bestWay;
 			let currentDistCovered = distCovered[current.x][current.y];
-	
-	
+
+
 			// Check the best way
 			possibleWaySet.delete(current);
 			isInPossibleWaySet[current.x][current.y] = false;
-			this.context.fillStyle = 'gray';
+			let ratio = current.dist(end) / start.dist(end);
+			let deg = Math.floor(120 * ratio) + 180;
+			this.context.fillStyle = `hsl(${deg},100%,40%)`;
 			this.renderer.drawAt(current.x, current.y);
-	
-	
+
+
 			// Destination reached
 			if (current.equals(end)) {
-	
+
 				console.log('reached')
-	
+
 				let path = [current];
 				while (true) {
 					if (!cameFrom[current.x]) break;
@@ -162,41 +169,58 @@ export class App {
 				}
 				clearInterval(rt);
 				this.renderer.drawPath(path);
-				return path;
+				// return path;
 			}
-	
+
 			// Scan neighbours
 			let neighbours = this.getPossibleNeighbours(current);
 			for (let neighbour of neighbours) {
-	
+
 				// Proceed if neighbour is better.
 				let newNeighbourScore = currentDistCovered + current.dist(neighbour)
 				if (newNeighbourScore < distCovered[neighbour.x][neighbour.y]) {
-	
+
 					//  Add neighbour to possible way if unchecked.
 					if (!isInPossibleWaySet[neighbour.x][neighbour.y]) {
 						possibleWaySet.add(neighbour);
 						isInPossibleWaySet[neighbour.x][neighbour.y] = true;
-	
-	
+
+
 						let ratio = current.dist(end) / start.dist(end);
-						let red = Math.floor(255 * ratio);
-						let green = 255 - red;
-						this.context.fillStyle = `rgb(${red},${green},0)`;
+						let deg = Math.floor(120 * ratio);
+						this.context.fillStyle = `hsl(${deg},100%,50%)`;
 						this.renderer.drawAt(neighbour.x, neighbour.y);
 					}
-	
+
 					// Save score and path
 					distCovered[neighbour.x][neighbour.y] = newNeighbourScore;
 					cameFrom[neighbour.x][neighbour.y] = current;
 				}
 			}
 		}
-	
+
+		let tps = 1000 / 60;
 		var rt = setInterval(() => {
-			for (let i = 0; i < 1; i++) loop();
-		}, 10)
+
+
+			if (this.isStarted) {
+				for (let i = 0; i < tps; i++) loop();
+			} else {
+				this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+				this.context.fillStyle = 'white';
+				this.context.fillRect(0, 0, this.MapDimension.x * this.scale, this.MapDimension.y * this.scale);
+
+				if (this.Mouse.LButton) this.Map2D[this.Mouse.position.x][this.Mouse.position.y] = 1;
+				else if (this.Mouse.RButton) this.Map2D[this.Mouse.position.x][this.Mouse.position.y] = 0;
+				else if (this.Mouse.MButton) this.start();
+
+				this.renderer.draw(this.Map2D, this.MapDimension);
+			}
+
+		}, tps)
 	}
+
+	public start() { this.isStarted = true; }
 }
 
 class Renderer {
@@ -205,12 +229,12 @@ class Renderer {
 	constructor(ctx: CanvasRenderingContext2D) {
 		this.context = ctx;
 	}
-	
+
 	private getVar() {
 		return { ctx: this.context, scale: this.scale };
 	}
 	public setScale(scale: number) { this.scale = scale; }
-	
+
 	public drawAt(x: number, y: number) {
 		let { ctx, scale } = this.getVar();
 		ctx.fillRect(x * scale, y * scale, scale, scale);

@@ -4,6 +4,17 @@ import { App } from "./app";
 const cv = document.createElement('canvas');
 document.body.appendChild(cv);
 
+const text = document.createElement('div');
+text.innerHTML = `
+<b>[LeftMouse]</b> Set wall<br>
+<b>[RightMouse]</b> Remove wall<br>
+<b>[MiddleMouse]</b> Start Path-Finding<br>
+<b>[Space]</b> Generate Random Obstacle<br>
+<b>[F5]</b> Reset<br>
+`
+text.id = 'detail'
+document.body.appendChild(text);
+
 const app = new App(cv);
 
 app.init();
