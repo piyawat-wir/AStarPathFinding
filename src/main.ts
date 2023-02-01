@@ -1,6 +1,4 @@
 import "./style.css";
-import { Vector2 } from "./Vector2";
-import { make2DArray } from "./misc";
 import { App } from "./app";
 
 const cv = document.createElement('canvas');
