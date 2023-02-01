@@ -2,7 +2,10 @@
   "name": "astarpathfinding",
   "version": "1.0.0",
   "description": "",
-  "scripts": {},
+  "scripts": {
+    "build": "npx webpack",
+    "serve": "npx webpack serve"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/piyawat-wir/AStarPathFinding.git"
