@@ -1,0 +1,20 @@
+{
+  "name": "astarpathfinding",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piyawat-wir/AStarPathFinding.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/piyawat-wir/AStarPathFinding/issues"
+  },
+  "homepage": "https://github.com/piyawat-wir/AStarPathFinding#readme",
+  "dependencies": {
+    "typescript": "^4.9.5"
+  }
+}
