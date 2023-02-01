@@ -1,3 +1,5 @@
+import "./style.css";
+
 const cv = document.getElementsByTagName('canvas')[0];
 const ctx = cv.getContext('2d');
 
