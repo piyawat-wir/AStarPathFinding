@@ -16,8 +16,6 @@ module.exports = {
 		new MiniCssExtractPlugin(),
 		new HtmlWebpackPlugin({
 			title: 'A* Star PathFinding Visualization',
-			templateContent: `<canvas></canvas>`,
-			inject: 'body'
 		})
 	],
 	devtool: "source-map",
